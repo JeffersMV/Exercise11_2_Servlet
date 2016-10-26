@@ -1,0 +1,22 @@
+
+CREATE TABLE students (
+  id INT NOT NULL AUTO_INCREMENT,
+  firstName VARCHAR(45) NOT NULL,
+  lastName VARCHAR(45) NOT NULL,
+  PRIMARY KEY (id));
+
+CREATE TABLE objects (
+  id INT NOT NULL AUTO_INCREMENT,
+  nameobject VARCHAR(45) NOT NULL,
+  PRIMARY KEY (id));
+
+CREATE TABLE relations (
+  id INT NOT NULL AUTO_INCREMENT,
+  idstudent INT NOT NULL,
+  idobject INT NOT NULL,
+  PRIMARY KEY (id),
+  FOREIGN KEY (idstudent)
+  REFERENCES students (id)
+  FOREIGN KEY (idobject)
+  REFERENCES objects (id));
+
