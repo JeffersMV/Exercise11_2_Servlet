@@ -14,7 +14,7 @@ import java.util.List;
 public class RelationsDAO extends DaoAbstract<RelationsDTO, Integer> {
     private PreparedStatement psCre;
 
-    protected RelationsDAO(Connection connection) throws DaoException, SQLException {
+    public RelationsDAO(Connection connection) throws DaoException, SQLException {
         super(connection);
     }
 
