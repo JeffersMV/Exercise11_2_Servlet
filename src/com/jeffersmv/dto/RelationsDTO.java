@@ -1,8 +1,5 @@
 package com.jeffersmv.dto;
 
-/**
- * Created by Jeff on 19.10.2016.
- */
 public class RelationsDTO {
     private int id;
     private int idStudent;

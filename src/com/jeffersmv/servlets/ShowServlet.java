@@ -1,7 +1,6 @@
 package com.jeffersmv.servlets;
 
 import com.jeffersmv.dao.DaoException;
-import com.jeffersmv.dao.DaoFactory;
 import com.jeffersmv.dto.ObjectDTO;
 import com.jeffersmv.dto.RelationsDTO;
 import com.jeffersmv.dto.StudentDTO;
@@ -11,30 +10,22 @@ import com.jeffersmv.sql.StudentDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.*;
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 
-@WebServlet(name = "ShowServlet")
-public class ShowServlet extends HttpServlet {
-    private StudentDAO studentDAO;
-    private ObjectDAO objectDAO;
-    private RelationsDAO relationsDAO;
+public class ShowServlet extends HttpServlet{
 
     public ShowServlet() throws DaoException, SQLException {
-        new DaoFactory();
-        Connection connection = DaoFactory.getConnection();
-        this.studentDAO = new StudentDAO(connection);
-        this.objectDAO = new ObjectDAO(connection);
-        this.relationsDAO = new RelationsDAO(connection);
     }
 
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        StudentDAO studentDAO = (StudentDAO) request.getSession().getAttribute("studentDAO");
+        ObjectDAO objectDAO = (ObjectDAO) request.getSession().getAttribute("objectDAO");
+        RelationsDAO relationsDAO = (RelationsDAO) request.getSession().getAttribute("relationsDAO");
+
         String parameter = request.getParameter("parameter");
         if (request.getParameter("id") != null) {
             Integer idParameter = Integer.valueOf(request.getParameter("id"));

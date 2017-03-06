@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public abstract class DaoAbstract<E, K> {
+public abstract class DaoAbstract<E, K>{
     private Connection connection;
     private PreparedStatement psSel;
     private PreparedStatement psSelId;
