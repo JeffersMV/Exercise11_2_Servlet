@@ -8,6 +8,7 @@ import com.jeffersmv.sql.ObjectDAO;
 import com.jeffersmv.sql.RelationsDAO;
 import com.jeffersmv.sql.StudentDAO;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.*;
 import java.io.IOException;
@@ -22,11 +23,17 @@ public class ShowServlet extends HttpServlet {
 
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         if (request.getParameter("id") != null) {
-            if (Objects.equals(request.getParameter("button"), "Save")) buttonSaveParameter(request, response);
-            else if (Objects.equals(request.getParameter("button"), "Delete")) buttonDeleteParameter(request, response);
-            else if (Objects.equals(request.getParameter("button"), "Specify subject")) buttonSpecify_subjectParameter(request, response);
-            else if (Objects.equals(request.getParameter("button"), "Cancel")) response.sendRedirect("/ShowServlet");
+            if (Objects.equals(request.getParameter("button"), "Save")) {
+                buttonSaveParameter(request, response);
+            } else if (Objects.equals(request.getParameter("button"), "Delete")){
+                buttonDeleteParameter(request, response);
+            } else if (Objects.equals(request.getParameter("button"), "Specify subject")){
+                buttonSpecify_subjectParameter(request, response);
+            }else if (Objects.equals(request.getParameter("button"), "Cancel")){
+                request.getRequestDispatcher("index.jsp").forward(request, response);
+            }
         }
+
         response.setContentType("text/html;charset=UTF-8");
         response.getWriter().println(
                 "<!DOCTYPE HTML><html><body>\n" +
@@ -40,11 +47,17 @@ public class ShowServlet extends HttpServlet {
                 "    <input type=\"submit\" value=\"Отобразить список предметов\" />\n" +
                 "  </form><br>");
 
-        if ((request.getParameter("error")) != null) errorParameter(request, response);
-        else if ((request.getParameter("action")) != null) actionParameter(request, response);
-        else if (request.getParameter("formButton") != null) formButtonParameter(request, response);
-        else if (Objects.equals(request.getParameter("parameter"), "student")) studentParameter(request, response);
-        else if (Objects.equals(request.getParameter("parameter"), "object")) objectParameter(request, response);
+        if ((request.getParameter("error")) != null) {
+            errorParameter(request, response);
+        } else if ((request.getParameter("action")) != null) {
+            actionParameter(request, response);
+        } else if (request.getParameter("formButton") != null) {
+            formButtonParameter(request, response);
+        } else if (Objects.equals(request.getParameter("parameter"), "student")) {
+            studentParameter(request, response);
+        } else if (Objects.equals(request.getParameter("parameter"), "object")){
+            objectParameter(request, response);
+        }
         response.getWriter().println("</body></html>");
     }
 
@@ -84,7 +97,7 @@ public class ShowServlet extends HttpServlet {
         }
     }
 
-    private void formButtonParameter(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void formButtonParameter(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         StudentDAO studentDAO = (StudentDAO) request.getSession().getAttribute("studentDAO");
         ObjectDAO objectDAO = (ObjectDAO) request.getSession().getAttribute("objectDAO");
         String parameter = request.getParameter("parameter");
@@ -123,11 +136,12 @@ public class ShowServlet extends HttpServlet {
                         "  </form></p>");
             }
         } catch (DaoException e) {
-            response.sendRedirect("/ShowServlet?error=ErrorFormButton");
+            requestDispatcher(request, response,"/ShowServlet?error=ErrorFormButton");
+
         }
     }
 
-    private void studentParameter(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void studentParameter(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         try {
             StudentDAO studentDAO = (StudentDAO) request.getSession().getAttribute("studentDAO");
             List<StudentDTO> lst1 = studentDAO.getAll();
@@ -144,11 +158,11 @@ public class ShowServlet extends HttpServlet {
                         "</form>" + "</p>");
             }
         } catch (DaoException e) {
-            response.sendRedirect("/ShowServlet?error=ErrorGetAllStudent");
+            requestDispatcher(request, response,"/ShowServlet?error=ErrorGetAllStudent");
         }
     }
 
-    private void objectParameter(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void objectParameter(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         try {
             ObjectDAO objectDAO = (ObjectDAO) request.getSession().getAttribute("objectDAO");
             List<ObjectDTO> lst2 = objectDAO.getAll();
@@ -164,11 +178,11 @@ public class ShowServlet extends HttpServlet {
                         "</form>" + "</p>");
             }
         } catch (DaoException e) {
-            response.sendRedirect("/ShowServlet?error=ErrorGetAllObject");
+            requestDispatcher(request, response,"/ShowServlet?error=ErrorGetAllObject");
         }
     }
 
-    private void buttonSaveParameter(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void buttonSaveParameter(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         StudentDAO studentDAO = (StudentDAO) request.getSession().getAttribute("studentDAO");
         ObjectDAO objectDAO = (ObjectDAO) request.getSession().getAttribute("objectDAO");
         String parameter = request.getParameter("parameter");
@@ -177,9 +191,9 @@ public class ShowServlet extends HttpServlet {
             String firstName = request.getParameter("firstName");
             String lastName = request.getParameter("lastName");
             if (firstName == null || "".equals(firstName.trim())) {
-                response.sendRedirect("/ShowServlet?error=NotFound");
+                requestDispatcher(request, response,"/ShowServlet?error=NotFound");
             } else if (lastName == null || "".equals(lastName.trim())) {
-                response.sendRedirect("/ShowServlet?error=NotFound");
+                requestDispatcher(request, response,"/ShowServlet?error=NotFound");
             } else {
                 StudentDTO studentDTO = new StudentDTO();
                 studentDTO.setId(idParameter);
@@ -188,14 +202,14 @@ public class ShowServlet extends HttpServlet {
                 try {
                     studentDAO.update(studentDTO);
                 } catch (DaoException e) {
-                    response.sendRedirect("/ShowServlet?error=ErrorSaveStudent");
+                    requestDispatcher(request, response,"/ShowServlet?error=ErrorSaveStudent");
                 }
-                response.sendRedirect("/ShowServlet?action=save");
+                requestDispatcher(request, response,"/ShowServlet?action=save");
             }
         } else if (Objects.equals(parameter, "object")) {
             String object = request.getParameter("object");
             if (object == null || "".equals(object.trim())) {
-                response.sendRedirect("/ShowServlet?error=NotFound");
+                requestDispatcher(request, response,"/ShowServlet?error=NotFound");
             } else {
                 ObjectDTO objectDTO = new ObjectDTO();
                 objectDTO.setId(idParameter);
@@ -203,14 +217,14 @@ public class ShowServlet extends HttpServlet {
                 try {
                     objectDAO.update(objectDTO);
                 } catch (DaoException e) {
-                    response.sendRedirect("/ShowServlet?error=ErrorSaveObject");
+                    requestDispatcher(request, response,"/ShowServlet?error=ErrorSaveObject");
                 }
-                response.sendRedirect("/ShowServlet?action=save");
+                requestDispatcher(request, response,"/ShowServlet?action=save");
             }
         }
     }
 
-    private void buttonDeleteParameter(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void buttonDeleteParameter(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         StudentDAO studentDAO = (StudentDAO) request.getSession().getAttribute("studentDAO");
         ObjectDAO objectDAO = (ObjectDAO) request.getSession().getAttribute("objectDAO");
         String parameter = request.getParameter("parameter");
@@ -219,20 +233,20 @@ public class ShowServlet extends HttpServlet {
             try {
                 studentDAO.delete(idParameter);
             } catch (DaoException e) {
-                response.sendRedirect("/ShowServlet?error=ErrorDeleteStudent");
+                requestDispatcher(request, response,"/ShowServlet?error=ErrorDeleteStudent");
             }
-            response.sendRedirect("/ShowServlet?action=delete");
+            requestDispatcher(request, response,"/ShowServlet?action=delete");
         } else if (Objects.equals(parameter, "object")) {
             try {
                 objectDAO.delete(idParameter);
             } catch (DaoException e) {
-                response.sendRedirect("/ShowServlet?error=ErrorDeleteObject");
+                requestDispatcher(request, response,"/ShowServlet?error=ErrorDeleteObject");
             }
-            response.sendRedirect("/ShowServlet?action=delete");
+            requestDispatcher(request, response,"/ShowServlet?action=delete");
         }
     }
 
-    private void buttonSpecify_subjectParameter(HttpServletRequest request, HttpServletResponse response) throws IOException{
+    private void buttonSpecify_subjectParameter(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         RelationsDAO relationsDAO = (RelationsDAO) request.getSession().getAttribute("relationsDAO");
         Integer idParameter = Integer.valueOf(request.getParameter("id"));
         Integer idObject = Integer.valueOf(request.getParameter("idObject"));
@@ -242,13 +256,13 @@ public class ShowServlet extends HttpServlet {
             lst2 = relationsDAO.getAll();
             for (RelationsDTO relationsDTO : lst2) {
                 if ((relationsDTO.getIdStudent() == idParameter) && (relationsDTO.getIdObject() == idObject)) {
-                    response.sendRedirect("/ShowServlet?action=exists");
+                    requestDispatcher(request, response,"/ShowServlet?action=exists");
                     cont++;
                     break;
                 }
             }
         } catch (DaoException e) {
-            response.sendRedirect("/ShowServlet?error=ErrorSearchSpecify");
+            requestDispatcher(request, response,"/ShowServlet?error=ErrorSearchSpecify");
         }
         if (cont == 0) {
             RelationsDTO relationsDTO = new RelationsDTO();
@@ -257,10 +271,17 @@ public class ShowServlet extends HttpServlet {
             try {
                 relationsDAO.create(relationsDTO);
             } catch (DaoException e) {
-                response.sendRedirect("/ShowServlet?error=ErrorSpecifySubject");
+                requestDispatcher(request, response,"/ShowServlet?error=ErrorSpecifySubject");
             }
-            response.sendRedirect("/ShowServlet?action=specifySubject");
+            requestDispatcher(request, response, "/ShowServlet?action=specifySubject");
         }
     }
+
+    private void requestDispatcher(HttpServletRequest request, HttpServletResponse response, String s) throws ServletException, IOException {
+        RequestDispatcher requestDispatcher = request.getRequestDispatcher(s);
+        requestDispatcher.forward(request, response);
+    }
+
+
 }
 
