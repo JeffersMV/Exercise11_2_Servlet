@@ -174,16 +174,22 @@ public class ShowServlet extends HttpServlet {
             StudentDAO studentDAO = (StudentDAO) request.getSession().getAttribute("studentDAO");
             String firstName = request.getParameter("firstName");
             String lastName = request.getParameter("lastName");
-            StudentDTO studentDTO = new StudentDTO();
-            studentDTO.setId(idParameter);
-            studentDTO.setFirstName(firstName);
-            studentDTO.setLastName(lastName);
-            try {
-                studentDAO.update(studentDTO);
-            } catch (DaoException e) {
-                outputServerResponse(response , "ErrorSaveStudent");
+            if (firstName == null || "".equals(firstName.trim())) {
+                outputServerResponse(response , "NotFound");
+            } else if (lastName == null || "".equals(lastName.trim())) {
+                outputServerResponse(response , "NotFound");
+            } else {
+                StudentDTO studentDTO = new StudentDTO();
+                studentDTO.setId(idParameter);
+                studentDTO.setFirstName(firstName);
+                studentDTO.setLastName(lastName);
+                try {
+                    studentDAO.update(studentDTO);
+                } catch (DaoException e) {
+                    outputServerResponse(response , "ErrorSaveStudent");
+                }
+                outputServerResponse(response, "save");
             }
-            outputServerResponse(response, "save");
         } else if (Objects.equals(parameter, "object")) {
             ObjectDAO objectDAO = (ObjectDAO) request.getSession().getAttribute("objectDAO");
             String object = request.getParameter("object");
