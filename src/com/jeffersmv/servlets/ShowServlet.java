@@ -20,15 +20,15 @@ public class ShowServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         response.getWriter().println(
                 "<!DOCTYPE HTML><html><body>\n" +
-                "  <form action=\"/ShowServlet\" method=\"GET\">\n" +
-                "    <input type=\"hidden\" name=\"action\" value=\"student\">\n" +
-                "    <input type=\"submit\" value=\"Отобразить список студентов\" />\n" +
-                "  </form>\n" +
-                "</br>\n" +
-                "  <form action=\"/ShowServlet\" method=\"GET\">\n" +
-                "    <input type=\"hidden\" name=\"action\" value=\"object\">\n" +
-                "    <input type=\"submit\" value=\"Отобразить список предметов\" />\n" +
-                "  </form><br>");
+                        "  <form action=\"/ShowServlet\" method=\"POST\">\n" +
+                        "    <input type=\"hidden\" name=\"action\" value=\"student\">\n" +
+                        "    <input type=\"submit\" value=\"Отобразить список студентов\" />\n" +
+                        "  </form>\n" +
+                        "</br>\n" +
+                        "  <form action=\"/ShowServlet\" method=\"POST\">\n" +
+                        "    <input type=\"hidden\" name=\"action\" value=\"object\">\n" +
+                        "    <input type=\"submit\" value=\"Отобразить список предметов\" />\n" +
+                        "  </form><br>");
 
         if (Objects.equals(request.getParameter("action"), "student")) {
             studentAction(request, response);
@@ -48,7 +48,7 @@ public class ShowServlet extends HttpServlet {
             appoint(request, response);
         }
 
-            response.getWriter().println("</body></html>");
+        response.getWriter().println("</body></html>");
     }
 
     private void studentAction(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -59,7 +59,7 @@ public class ShowServlet extends HttpServlet {
             for (StudentDTO studentDTO : lst1) {
                 idObject = studentDTO.getId();
                 response.getWriter().print("<p>" + studentDTO.getId() + "    " + studentDTO.getFirstName() + "     " + studentDTO.getLastName() + "     " +
-                        "<form action=\"/ShowServlet\" method=\"GET\">\n" +
+                        "<form action=\"/ShowServlet\" method=\"POST\">\n" +
                         "    <input type=\"hidden\" name=\"parameter\" value=\"" + request.getParameter("action") + "\">\n" +
                         "    <input type=\"hidden\" name=\"id\" value=" + idObject + ">\n" +
                         "    <input type=\"submit\" name=\"action\" value=\"Edit\"/>\n" +
@@ -80,7 +80,7 @@ public class ShowServlet extends HttpServlet {
             for (ObjectDTO objectDTO : lst2) {
                 idObject = objectDTO.getId();
                 response.getWriter().print("<p>" + objectDTO.getId() + "    " + objectDTO.getObject() + "     " +
-                        "<form action=\"/ShowServlet\" method=\"GET\">\n" +
+                        "<form action=\"/ShowServlet\" method=\"POST\">\n" +
                         "    <input type=\"hidden\" name=\"parameter\" value=\"" + request.getParameter("action") + "\">\n" +
                         "    <input type=\"hidden\" name=\"id\" value=" + idObject + ">\n" +
                         "    <input type=\"submit\" name=\"action\" value=\"Edit\"/>\n" +
@@ -93,38 +93,53 @@ public class ShowServlet extends HttpServlet {
     }
 
     private void editAction(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        StudentDAO studentDAO = (StudentDAO) request.getSession().getAttribute("studentDAO");
-        ObjectDAO objectDAO = (ObjectDAO) request.getSession().getAttribute("objectDAO");
         String parameter = request.getParameter("parameter");
         Integer id = Integer.valueOf(request.getParameter("id"));
         try {
             response.getWriter().println(
-                    "<form action=\"ShowServlet\" method=\"GET\">\n" + ((Objects.equals(parameter, "student")) ?
-                            "    <input type=\"text\" name=\"firstName\" value=\"" + studentDAO.getEntityByK(id).getFirstName() + "\">\n" +
-                                    "    <input type=\"text\" name=\"lastName\" value=\"" + studentDAO.getEntityByK(id).getLastName() + "\">\n" :
-                            "    <input type=\"text\" name=\"object\" value=\"" + objectDAO.getEntityByK(id).getObject() + "\">\n") +
-                            "    <input type=\"hidden\" name=\"id\" value=\"" + id + "\"/>\n" +
-                            "    <input type=\"hidden\" name=\"parameter\" value=\"" + parameter + "\"/>\n" +
-                            "    <input type=\"submit\" name=\"action\" value=\"Save\"/>\n" +
-                            "    <input type=\"submit\" name=\"action\" value=\"Cancel\"/>\n" +
-                            "</form>");
-
+                    "<form action=\"ShowServlet\" method=\"POST\">\n");
+            if (Objects.equals(parameter, "student")) {
+                StudentDAO studentDAO = (StudentDAO) request.getSession().getAttribute("studentDAO");
+                StudentDTO studentDTO = studentDAO.getEntityByK(id);
+                response.getWriter().println(
+                    "    <input type=\"text\" name=\"firstName\" value=\"" + studentDTO.getFirstName() + "\" required placeholder=\"First name\">\n" +
+                    "    <input type=\"text\" name=\"lastName\" value=\"" + studentDTO.getLastName() + "\" required placeholder=\"Last name\">\n");
+            } else {
+                ObjectDAO objectDAO = (ObjectDAO) request.getSession().getAttribute("objectDAO");
+                response.getWriter().println(
+                    "    <input type=\"text\" name=\"object\" value=\"" + objectDAO.getEntityByK(id).getObject() + "\" required placeholder=\"Subject name\">\n");
+            }
+            response.getWriter().println(
+                "    <input type=\"hidden\" name=\"id\" value=\"" + id + "\"/>\n" +
+                "    <input type=\"hidden\" name=\"parameter\" value=\"" + parameter + "\"/>\n" +
+                "    <input type=\"submit\" name=\"action\" value=\"Save\"/>\n" +
+                "    <input type=\"submit\" name=\"action\" value=\"Cancel\"/>\n" +
+                "</form>");
         } catch (DaoException e) {
             outputServerResponse(response, "ErrorFormEdit");
         }
     }
 
     private void deleteAction(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        StudentDAO studentDAO = (StudentDAO) request.getSession().getAttribute("studentDAO");
-        ObjectDAO objectDAO = (ObjectDAO) request.getSession().getAttribute("objectDAO");
         String parameter = request.getParameter("parameter");
         Integer id = Integer.valueOf(request.getParameter("id"));
         try {
             response.getWriter().println(
-                    "<form action=\"ShowServlet\" method=\"GET\">\n" + ((Objects.equals(parameter, "student")) ?
-                            "    Вы уверены что хотите удалить \"" + studentDAO.getEntityByK(id).getId() + " | " + studentDAO.getEntityByK(id).getFirstName() + " " + studentDAO.getEntityByK(id).getLastName() + "\"!\n" :
-                            "    Вы уверены что хотите удалить \"" + objectDAO.getEntityByK(id).getId() + " | " + objectDAO.getEntityByK(id).getObject() + "\"!\n") +
-                            "    <input type=\"hidden\" name=\"id\" value=\"" + id + "\"/>\n" +
+                    "<form action=\"ShowServlet\" method=\"POST\">\n" +
+                            "    Вы уверены что хотите удалить \"");
+            if (Objects.equals(parameter, "student")) {
+                StudentDAO studentDAO = (StudentDAO) request.getSession().getAttribute("studentDAO");
+                StudentDTO studentDTO = studentDAO.getEntityByK(id);
+                response.getWriter().println(
+                        studentDTO.getId() + " | " + studentDTO.getFirstName() + " " + studentDTO.getLastName() + "\"!\n");
+            } else {
+                ObjectDAO objectDAO = (ObjectDAO) request.getSession().getAttribute("objectDAO");
+                ObjectDTO objectDTO = objectDAO.getEntityByK(id);
+                response.getWriter().println(
+                        objectDTO.getId() + " | " + objectDTO.getObject() + "\"!\n");
+            }
+            response.getWriter().println(
+                    "    <input type=\"hidden\" name=\"id\" value=\"" + id + "\"/>\n" +
                             "    <input type=\"hidden\" name=\"parameter\" value=\"" + parameter + "\"/>\n" +
                             "    <input type=\"submit\" name=\"action\" value=\"Remove\"/>\n" +
                             "    <input type=\"submit\" name=\"action\" value=\"Cancel\"/>\n" +
@@ -139,7 +154,7 @@ public class ShowServlet extends HttpServlet {
         Integer id = Integer.valueOf(request.getParameter("id"));
         try {
             List<ObjectDTO> list = objectDAO.getAll();
-            response.getWriter().print("<p>" + "<form action=\"/ShowServlet\" method=\"GET\">\n" +
+            response.getWriter().print("<p>" + "<form action=\"/ShowServlet\" method=\"POST\">\n" +
                     "    <input type=\"hidden\" name=\"id\" value=\"" + id + "\">\n");
             for (ObjectDTO objectDTO : list) {
                 response.getWriter().print("    <input type=\"radio\" checked=\"checked\" name=\"idObject\" value=\"" + objectDTO.getId() + "\">" + objectDTO.getId() + " | " + objectDTO.getObject() + "<Br><Br>");
@@ -153,53 +168,42 @@ public class ShowServlet extends HttpServlet {
     }
 
     private void save(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        StudentDAO studentDAO = (StudentDAO) request.getSession().getAttribute("studentDAO");
-        ObjectDAO objectDAO = (ObjectDAO) request.getSession().getAttribute("objectDAO");
         String parameter = request.getParameter("parameter");
         Integer idParameter = Integer.valueOf(request.getParameter("id"));
         if (Objects.equals(parameter, "student")) {
+            StudentDAO studentDAO = (StudentDAO) request.getSession().getAttribute("studentDAO");
             String firstName = request.getParameter("firstName");
             String lastName = request.getParameter("lastName");
-            if (firstName == null || "".equals(firstName.trim())) {
-                outputServerResponse(response , "NotFound");
-            } else if (lastName == null || "".equals(lastName.trim())) {
-                outputServerResponse(response , "NotFound");
-            } else {
-                StudentDTO studentDTO = new StudentDTO();
-                studentDTO.setId(idParameter);
-                studentDTO.setFirstName(firstName);
-                studentDTO.setLastName(lastName);
-                try {
-                    studentDAO.update(studentDTO);
-                } catch (DaoException e) {
-                    outputServerResponse(response , "ErrorSaveStudent");
-                }
-                outputServerResponse(response, "save");
+            StudentDTO studentDTO = new StudentDTO();
+            studentDTO.setId(idParameter);
+            studentDTO.setFirstName(firstName);
+            studentDTO.setLastName(lastName);
+            try {
+                studentDAO.update(studentDTO);
+            } catch (DaoException e) {
+                outputServerResponse(response , "ErrorSaveStudent");
             }
+            outputServerResponse(response, "save");
         } else if (Objects.equals(parameter, "object")) {
+            ObjectDAO objectDAO = (ObjectDAO) request.getSession().getAttribute("objectDAO");
             String object = request.getParameter("object");
-            if (object == null || "".equals(object.trim())) {
-                outputServerResponse(response , "NotFound");
-            } else {
-                ObjectDTO objectDTO = new ObjectDTO();
-                objectDTO.setId(idParameter);
-                objectDTO.setObject(object);
-                try {
-                    objectDAO.update(objectDTO);
-                } catch (DaoException e) {
-                    outputServerResponse(response , "ErrorSaveObject");
-                }
-                outputServerResponse(response, "save");
+            ObjectDTO objectDTO = new ObjectDTO();
+            objectDTO.setId(idParameter);
+            objectDTO.setObject(object);
+            try {
+                objectDAO.update(objectDTO);
+            } catch (DaoException e) {
+                outputServerResponse(response , "ErrorSaveObject");
             }
+            outputServerResponse(response, "save");
         }
     }
 
     private void remove(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        StudentDAO studentDAO = (StudentDAO) request.getSession().getAttribute("studentDAO");
-        ObjectDAO objectDAO = (ObjectDAO) request.getSession().getAttribute("objectDAO");
         String parameter = request.getParameter("parameter");
         Integer idParameter = Integer.valueOf(request.getParameter("id"));
         if (Objects.equals(parameter, "student")) {
+            StudentDAO studentDAO = (StudentDAO) request.getSession().getAttribute("studentDAO");
             try {
                 studentDAO.delete(idParameter);
             } catch (DaoException e) {
@@ -207,6 +211,7 @@ public class ShowServlet extends HttpServlet {
             }
             outputServerResponse(response, "delete");
         } else if (Objects.equals(parameter, "object")) {
+            ObjectDAO objectDAO = (ObjectDAO) request.getSession().getAttribute("objectDAO");
             try {
                 objectDAO.delete(idParameter);
             } catch (DaoException e) {
